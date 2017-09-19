@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Collections.Generic;
+using System.Text;
 
 namespace RefactoringKata
 {
@@ -14,31 +15,36 @@ namespace RefactoringKata
         public string GetContents()
         {
             var sb = new StringBuilder("{\"orders\": [");
+            var orderCount = _orders.GetOrdersCount();
 
-            for (var i = 0; i < _orders.GetOrdersCount(); i++)
+            for (var i = 0; i < orderCount; i++)
             {
                 var order = _orders.GetOrder(i);
+
                 sb.Append("{");
                 sb.Append("\"id\": ");
                 sb.Append(order.GetOrderId());
                 sb.Append(", ");
                 sb.Append("\"products\": [");
 
-                for (var j = 0; j < order.GetProductsCount(); j++)
+                var productsCount = order.GetProductsCount();
+
+                for (var j = 0; j < productsCount; j++)
                 {
                     var product = order.GetProduct(j);
+
                     sb.Append("{");
                     sb.Append("\"code\": \"");
                     sb.Append(product.Code);
                     sb.Append("\", ");
                     sb.Append("\"color\": \"");
-                    sb.Append(getColorFor(product));
+                    sb.Append(_ProductColorMapping[product.Color]);
                     sb.Append("\", ");
 
                     if (product.Size != Product.SIZE_NOT_APPLICABLE)
                     {
                         sb.Append("\"size\": \"");
-                        sb.Append(getSizeFor(product));
+                        sb.Append(_ProductSizeMapping[product.Size]);
                         sb.Append("\", ");
                     }
 
@@ -50,58 +56,46 @@ namespace RefactoringKata
                     sb.Append("\"}, ");
                 }
 
-                if (order.GetProductsCount() > 0)
+                if (productsCount > 0)
                 {
-                    sb.Remove(sb.Length - 2, 2);
+                    RemoveLastXChars(sb, 2);
                 }
 
                 sb.Append("]");
                 sb.Append("}, ");
             }
 
-            if (_orders.GetOrdersCount() > 0)
+            if (orderCount > 0)
             {
-                sb.Remove(sb.Length - 2, 2);
+                RemoveLastXChars(sb, 2);
             }
 
             return sb.Append("]}").ToString();
         }
 
-
-        private string getSizeFor(Product product)
+        private void RemoveLastXChars(StringBuilder sb, int removeNumber)
         {
-            switch (product.Size)
-            {
-                case 1:
-                    return "XS";
-                case 2:
-                    return "S";
-                case 3:
-                    return "M";
-                case 4:
-                    return "L";
-                case 5:
-                    return "XL";
-                case 6:
-                    return "XXL";
-                default:
-                    return "Invalid Size";
-            }
+            sb.Remove(sb.Length - removeNumber, removeNumber);
         }
 
-        private string getColorFor(Product product)
+        private readonly Dictionary<int, string> _ProductSizeMapping = new Dictionary<int, string>()
         {
-            switch (product.Color)
-            {
-                case 1:
-                    return "blue";
-                case 2:
-                    return "red";
-                case 3:
-                    return "yellow";
-                default:
-                    return "no color";
-            }
-        }
+            {0,"Invalid Size"}, 
+            {1,"XS"},
+            {2,"S"},
+            {3,"M"},
+            {4,"L"},
+            {5,"XL"},
+            {6,"XXL"}
+        };
+
+
+        private readonly Dictionary<int, string> _ProductColorMapping = new Dictionary<int, string>()
+        {
+            {0,"no color"},
+            {1,"blue"},
+            {2,"red"},
+            {3,"yellow"}
+        };
     }
 }
